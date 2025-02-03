@@ -5,76 +5,68 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class PostgresDB {
-    private String host;
-    private String username;
-    private String password;
-    private String dbName;
+    private static volatile PostgresDB instance;
     private Connection connection;
 
-    public PostgresDB(String host, String username, String password, String dbName) {
-        this.setHost(host);
-        this.setUsername(username);
-        this.setPassword(password);
-        this.setDbName(dbName);
+    private final String host;
+    private final String username;
+    private final String password;
+    private final String dbName;
+
+    private PostgresDB(String host, String username, String password, String dbName) {
+        this.host = host;
+        this.username = username;
+        this.password = password;
+        this.dbName = dbName;
+        this.connection = createConnection();
     }
 
-    public Connection getConnection() {
-        String connectionUrl = this.host + "/" + this.dbName;
-
-        try {
-            if (this.connection != null && !this.connection.isClosed()) {
-                return this.connection;
-            } else {
-                Class.forName("org.postgresql.Driver");
-                this.connection = DriverManager.getConnection(connectionUrl, this.username, this.password);
-                return this.connection;
+    // Метод для создания единственного экземпляра PostgresDB
+    public static PostgresDB getInstance(String host, String username, String password, String dbName) {
+        if (instance == null) {
+            synchronized (PostgresDB.class) {
+                if (instance == null) { // Double-checked locking
+                    instance = new PostgresDB(host, username, password, dbName);
+                }
             }
+        }
+        return instance;
+    }
+
+    // Метод для установления соединения с БД
+    private Connection createConnection() {
+        String connectionUrl = host + "/" + dbName;
+        try {
+            Class.forName("org.postgresql.Driver");
+            return DriverManager.getConnection(connectionUrl, username, password);
         } catch (Exception e) {
-            System.out.println("failed to connect to postgres: " + e.getMessage());
+            System.out.println("Failed to connect to PostgreSQL: " + e.getMessage());
             return null;
         }
     }
 
-    public String getHost() {
-        return this.host;
+    // Метод для получения соединения (гарантирует, что соединение живо)
+    public Connection getConnection() {
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = createConnection();
+            }
+        } catch (SQLException e) {
+            System.out.println("Error checking connection: " + e.getMessage());
+        }
+        return connection;
     }
 
-    public void setHost(String host) {
-        this.host = host;
-    }
-
-    public String getUsername() {
-        return this.username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return this.password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getDbName() {
-        return this.dbName;
-    }
-
-    public void setDbName(String dbName) {
-        this.dbName = dbName;
-    }
-
+    // Закрытие соединения
     public void close() {
-        if (this.connection != null) {
+        if (connection != null) {
             try {
-                this.connection.close();
+                connection.close();
+                connection = null;
+                instance = null; // Позволяет пересоздать соединение, если потребуется
             } catch (SQLException ex) {
                 System.out.println("Connection close error: " + ex.getMessage());
             }
         }
-
     }
 }

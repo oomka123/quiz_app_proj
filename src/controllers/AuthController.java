@@ -1,23 +1,50 @@
 package controllers;
 
 import models.User;
-import repositories.UserRepository;
+import services.UserService;
+
+import java.util.List;
 
 public class AuthController {
-    private UserRepository userRepo;
+    private final UserService userService;
 
-    public AuthController(UserRepository userRepo) {
-        this.userRepo = userRepo;
+    public AuthController(UserService userService) {
+        this.userService = userService;
     }
+
 
     public String registerUser(String username, String password) {
-        User user = new User(username, password);
-        boolean success = this.userRepo.userRegistration(user);
-        return success ? "Registration successful!" : "Registration failed. Username may already exist.";
+        return userService.registerUser(username, password);
     }
 
+
     public User loginUser(String username, String password) {
-        User user = userRepo.userLogin(username, password);
-        return user; // Возвращаем пользователя, если вход успешен
+        return userService.loginUser(username, password);
     }
+
+
+    public String getUserRole(int userId) {
+        return userService.getUserRole(userId);
+    }
+
+
+    public String updateUserRole(int adminId, int userId, String newRole) {
+
+        User admin = userService.getUserById(adminId);
+        if (admin == null || admin.getRole() != User.Role.ADMIN) {
+            return "Access denied! Only ADMIN can change roles.";
+        }
+
+        boolean updated = userService.updateUserRole(userId, newRole);
+        return updated ? "User role updated successfully!" : "Failed to update role.";
+    }
+
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
+    }
+
+    public User getUserById(int userId) {
+        return userService.getUserById(userId);
+    }
+
 }

@@ -2,20 +2,21 @@ package controllers;
 
 import models.Question;
 import repositories.QuestionRepository;
+import services.QuestionService;
 
 import java.util.List;
 
 public class QuestionController {
 
-    private final QuestionRepository questionRepo;
+    private final QuestionService questionService;
 
-    public QuestionController(QuestionRepository questionRepo) {
-        this.questionRepo = questionRepo;
+    public QuestionController(QuestionService questionService) {
+        this.questionService = questionService;
     }
 
     public List<Question> getQuestionsByQuiz(int quizId) {
         try {
-            return questionRepo.getQuestionsByQuiz(quizId);
+            return questionService.getQuestionsByQuiz(quizId);
         } catch (Exception e) {
             System.out.println("Error fetching questions: " + e.getMessage());
             return List.of();
@@ -23,20 +24,10 @@ public class QuestionController {
     }
 
     public String addQuestion(Question question) {
-        if (question.getQuestionText() == null || question.getQuestionText().isEmpty()) {
-            return "Question text cannot be empty.";
-        }
-
-        boolean success = questionRepo.addQuestion(question);
-        return success ? "Question added successfully!" : "Failed to add question.";
+        return questionService.addQuestion(question);
     }
 
     public String deleteQuestion(int questionId) {
-        if (questionId <= 0) {
-            return "Invalid question ID.";
-        }
-
-        boolean success = questionRepo.deleteQuestion(questionId);
-        return success ? "Question deleted successfully!" : "Failed to delete question.";
+        return questionService.deleteQuestion(questionId);
     }
 }

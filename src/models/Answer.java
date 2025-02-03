@@ -6,19 +6,6 @@ public class Answer {
     private String answerText;
     private boolean correctAnswer;
 
-    public Answer(int answerId, int questionId, String answerText, boolean correctAnswer) {
-        this.answerId = answerId;
-        this.questionId = questionId;
-        this.answerText = answerText;
-        this.correctAnswer = correctAnswer;
-    }
-
-    public Answer(int answerId, String answerText, boolean correctAnswer) {
-        this.answerId = answerId;
-        this.answerText = answerText;
-        this.correctAnswer = correctAnswer;
-    }
-
     public Answer(int answerId, String answerText, boolean isCorrect, int questionId) {
         this.answerId = answerId;
         this.answerText = answerText;
@@ -56,5 +43,10 @@ public class Answer {
 
     public void setCorrectAnswer(boolean correctAnswer) {
         this.correctAnswer = correctAnswer;
+    }
+
+
+    public boolean isValid() {
+        return answerText != null && !answerText.trim().isEmpty() && questionId > 0;
     }
 }

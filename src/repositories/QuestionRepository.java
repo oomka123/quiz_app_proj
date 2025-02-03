@@ -67,6 +67,11 @@ public class QuestionRepository {
 
                 int rows = st.executeUpdate();
                 result = rows > 0;
+
+                if (result) {
+
+                    updateQuestionCount(question.getQuizId());
+                }
             }
         } catch (SQLException e) {
             System.out.println("Error adding question: " + e.getMessage());
@@ -84,16 +89,33 @@ public class QuestionRepository {
     public boolean deleteQuestion(int questionId) {
         Connection con = null;
         boolean result = false;
+        int quizId = -1;
 
         try {
             con = db.getConnection();
             if (con != null) {
+
+                String getQuizIdSql = "SELECT quiz_id FROM questions WHERE question_id = ?";
+                PreparedStatement getQuizIdSt = con.prepareStatement(getQuizIdSql);
+                getQuizIdSt.setInt(1, questionId);
+                ResultSet rs = getQuizIdSt.executeQuery();
+
+                if (rs.next()) {
+                    quizId = rs.getInt("quiz_id");
+                }
+
+
                 String sql = "DELETE FROM questions WHERE question_id = ?";
                 PreparedStatement st = con.prepareStatement(sql);
                 st.setInt(1, questionId);
 
                 int rows = st.executeUpdate();
                 result = rows > 0;
+
+                if (result) {
+
+                    updateQuestionCount(quizId);
+                }
             }
         } catch (SQLException e) {
             System.out.println("Error deleting question: " + e.getMessage());
@@ -106,5 +128,19 @@ public class QuestionRepository {
         }
 
         return result;
+    }
+
+    private void updateQuestionCount(int quizId) {
+        String sql = "UPDATE quizzez SET question_count = (SELECT COUNT(*) FROM questions WHERE quiz_id = ?) WHERE quiz_id = ?";
+        try (Connection con = db.getConnection();
+             PreparedStatement st = con.prepareStatement(sql)) {
+
+            st.setInt(1, quizId);
+            st.setInt(2, quizId);
+
+            st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("SQL error in updateQuestionCount: " + e.getMessage());
+        }
     }
 }

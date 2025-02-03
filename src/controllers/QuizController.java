@@ -1,35 +1,35 @@
 package controllers;
 
-import java.util.List;
 import models.Quiz;
-import repositories.QuizRepository;
+import services.QuizService;
+
+import java.util.List;
 
 public class QuizController {
-    private final QuizRepository quizRepo;
+    private final QuizService quizService;
 
-    public QuizController(QuizRepository quizRepo) {
-        this.quizRepo = quizRepo;
+    public QuizController(QuizService quizService) {
+        this.quizService = quizService;
     }
+
+
+    public List<Quiz> getQuizzesByUser(int userId) {
+        return quizService.getQuizzesByUser(userId);
+    }
+
 
     public String createQuiz(String quizName, int userId) {
-        // Создаем объект Quiz
-        Quiz quiz = new Quiz(quizName, userId);
-
-        // Пытаемся создать тест в репозитории
-        boolean success = this.quizRepo.quizCreation(quiz, userId);
-
-        // Возвращаем сообщение в зависимости от результата
-        return success ? "Quiz creation successful!" : "Quiz creation failed. Please try again.";
+        return quizService.createQuiz(quizName, userId);
     }
+
 
     public List<Quiz> showQuizzes(int userId) {
-        // Получаем список квизов для пользователя
-        return quizRepo.quizShowing(userId);
+        return getQuizzesByUser(userId);
     }
 
+
     public String deleteQuiz(int quizId) {
-        boolean success = this.quizRepo.quizDelete(quizId);
-        return success ? "Quiz deleted successfully!" : "Failed to delete quiz. Please try again.";
+        return quizService.deleteQuiz(quizId);
     }
 
 }

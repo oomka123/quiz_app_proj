@@ -1,42 +1,61 @@
 package models;
 
 public class User {
-    private int user_id;
-    private String user_name;
-    private String user_password;
+    private int userId;
+    private String userName;
+    private String userPassword;
+    private Role role;
 
-    public User(int user_id, String user_name, String user_password) {
-        this.user_id = user_id;
-        this.user_name = user_name;
-        this.user_password = user_password;
+
+    public enum Role {
+        ADMIN, EDITOR, USER
     }
 
-    public User(String user_name, String user_password) {
-        this.user_name = user_name;
-        this.user_password = user_password;
+
+    public User(int userId, String userName, String userPassword, Role role) {
+        this.userId = userId;
+        this.userName = userName;
+        this.userPassword = userPassword;
+        this.role = role;
     }
 
-    public int getUser_id() {
-        return this.user_id;
+
+    public User(String userName, String userPassword) {
+        this.userName = userName;
+        this.userPassword = userPassword;
+        this.role = Role.USER;
     }
 
-    public void setUser_id(int user_id) {
-        this.user_id = user_id;
+
+    public int getUserId() {
+        return userId;
     }
 
-    public String getUser_password() {
-        return this.user_password;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
-    public void setUser_password(String user_password) {
-        this.user_password = user_password;
+    public String getUserName() {
+        return userName;
     }
 
-    public String getUser_name() {
-        return this.user_name;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public void setUser_name(String user_name) {
-        this.user_name = user_name;
+    public String getUserPassword() {
+        return userPassword;
+    }
+
+    public void setUserPassword(String userPassword) {
+        this.userPassword = userPassword;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

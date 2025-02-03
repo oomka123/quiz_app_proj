@@ -4,11 +4,13 @@ public class Quiz {
     private int quizId;
     private int userId;
     private String quizName;
+    private int questionCount;
 
-    public Quiz(int quizId, int userId, String quizName) {
+
+    public Quiz(int quizId, String quizName, int questionCount) {
         this.quizId = quizId;
-        this.userId = userId;
         this.quizName = quizName;
+        this.questionCount = questionCount;
     }
 
     public Quiz(String quizName, int userId) {
@@ -16,8 +18,9 @@ public class Quiz {
         this.userId = userId;
     }
 
+
     public int getQuizId() {
-        return this.quizId;
+        return quizId;
     }
 
     public void setQuizId(int quizId) {
@@ -25,7 +28,7 @@ public class Quiz {
     }
 
     public int getUserId() {
-        return this.userId;
+        return userId;
     }
 
     public void setUserId(int userId) {
@@ -33,10 +36,18 @@ public class Quiz {
     }
 
     public String getQuizName() {
-        return this.quizName;
+        return quizName;
     }
 
     public void setQuizName(String quizName) {
         this.quizName = quizName;
+    }
+
+    public int getQuestionCount() {
+        return questionCount;
+    }
+
+    public void setQuestionCount(int questionCount) {
+        this.questionCount = questionCount;
     }
 }

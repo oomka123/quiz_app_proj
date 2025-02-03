@@ -1,54 +1,55 @@
 package controllers;
 
 import models.Answer;
-import repositories.AnswerRepository;
+import services.AnswerService;
 
 import java.util.List;
 
 public class AnswerController {
 
-    private final AnswerRepository answerRepo;
+    private final AnswerService answerService;
 
-    public AnswerController(AnswerRepository answerRepo) {
-        this.answerRepo = answerRepo;
+    public AnswerController(AnswerService answerService) {
+        this.answerService = answerService;
     }
 
-    // Получение списка ответов по ID вопроса
+
     public List<Answer> getAnswersByQuestion(int questionId) {
-        return answerRepo.getAnswersByQuestion(questionId);
+        try {
+            return answerService.getAnswersByQuestion(questionId);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            return List.of();
+        }
     }
 
-    // Добавление нового ответа
+
     public boolean addAnswer(Answer answer) {
-        if (answer.getAnswerText() == null || answer.getAnswerText().isEmpty()) {
-            System.out.println("Answer text cannot be null or empty.");
+        try {
+            return answerService.addAnswer(answer);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
             return false;
         }
-
-        return answerRepo.addAnswer(answer);
     }
 
-    // Удаление ответа по ID
+
     public boolean deleteAnswer(int answerId) {
-        if (answerId <= 0) {
-            System.out.println("Invalid answer ID.");
+        try {
+            return answerService.deleteAnswer(answerId);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
             return false;
         }
-
-        return answerRepo.deleteAnswer(answerId);
     }
 
-    // Обновление существующего ответа
-    public boolean updateAnswer(Answer answer) {
-        if (answer.getAnswerId() <= 0) {
-            System.out.println("Invalid answer ID.");
-            return false;
-        }
-        if (answer.getAnswerText() == null || answer.getAnswerText().isEmpty()) {
-            System.out.println("Answer text cannot be null or empty.");
-            return false;
-        }
 
-        return answerRepo.updateAnswer(answer);
+    public boolean updateAnswer(Answer answer) {
+        try {
+            return answerService.updateAnswer(answer);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
+            return false;
+        }
     }
 }
