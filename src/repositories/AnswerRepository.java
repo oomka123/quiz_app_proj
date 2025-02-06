@@ -2,12 +2,13 @@ package repositories;
 
 import database.PostgresDB;
 import models.Answer;
+import repositories.Irepositories.IAnswerRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AnswerRepository {
+public class AnswerRepository implements IAnswerRepository {
 
     private final PostgresDB db;
 
@@ -15,7 +16,7 @@ public class AnswerRepository {
         this.db = db;
     }
 
-
+    @Override
     public List<Answer> getAnswersByQuestion(int questionId) {
         List<Answer> answers = new ArrayList<>();
         String sql = "SELECT answer_id, answer_text, is_correct FROM answers WHERE question_id = ?";
@@ -43,7 +44,7 @@ public class AnswerRepository {
         return answers;
     }
 
-
+    @Override
     public boolean addAnswer(Answer answer) {
         String sql = "INSERT INTO answers (answer_text, is_correct, question_id) VALUES (?, ?, ?)";
 
@@ -61,7 +62,7 @@ public class AnswerRepository {
         }
     }
 
-
+    @Override
     public boolean deleteAnswer(int answerId) {
         String sql = "DELETE FROM answers WHERE answer_id = ?";
 
@@ -76,7 +77,7 @@ public class AnswerRepository {
         }
     }
 
-
+    @Override
     public boolean updateAnswer(Answer answer) {
         String sql = "UPDATE answers SET answer_text = ?, is_correct = ? WHERE answer_id = ?";
 

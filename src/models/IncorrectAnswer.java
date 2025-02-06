@@ -1,6 +1,8 @@
 package models;
 
-public class IncorrectAnswer {
+import models.Imodels.IIncorrectAnswer;
+
+public class IncorrectAnswer implements IIncorrectAnswer{
     private final Question question;
     private final Answer userAnswer;
     private final Answer correctAnswer;
@@ -11,14 +13,17 @@ public class IncorrectAnswer {
         this.correctAnswer = correctAnswer;
     }
 
+    @Override
     public Question getQuestion() {
         return question;
     }
 
+    @Override
     public Answer getUserAnswer() {
         return userAnswer;
     }
 
+    @Override
     public Answer getCorrectAnswer() {
         return correctAnswer;
     }

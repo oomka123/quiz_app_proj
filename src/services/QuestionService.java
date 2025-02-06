@@ -1,11 +1,13 @@
 package services;
 
+import factories.QuestionFactory;
 import models.Question;
 import repositories.QuestionRepository;
+import services.Iservices.IQuestionService;
 
 import java.util.List;
 
-public class QuestionService {
+public class QuestionService implements IQuestionService {
 
     private final QuestionRepository questionRepo;
 
@@ -13,6 +15,7 @@ public class QuestionService {
         this.questionRepo = questionRepo;
     }
 
+    @Override
     public List<Question> getQuestionsByQuiz(int quizId) {
         if (quizId <= 0) {
             throw new IllegalArgumentException("Quiz ID must be greater than 0.");
@@ -21,15 +24,19 @@ public class QuestionService {
         return questionRepo.getQuestionsByQuiz(quizId);
     }
 
-    public String addQuestion(Question question) {
-        if (question == null || question.getQuestionText() == null || question.getQuestionText().trim().isEmpty()) {
-            return "Question text cannot be empty.";
-        }
+    @Override
+    public String addQuestion(String questionText, int quizId) {
+        try {
+            QuestionFactory.validateQuestionData(questionText, quizId);
 
-        boolean success = questionRepo.addQuestion(question);
-        return success ? "Question added successfully!" : "Failed to add question.";
+            boolean success = questionRepo.addQuestion(questionText, quizId);
+            return success ? "Question added successfully!" : "Failed to add question.";
+        } catch (IllegalArgumentException e) {
+            return e.getMessage();
+        }
     }
 
+    @Override
     public String deleteQuestion(int questionId) {
         if (questionId <= 0) {
             return "Invalid question ID.";
@@ -38,4 +45,5 @@ public class QuestionService {
         boolean success = questionRepo.deleteQuestion(questionId);
         return success ? "Question deleted successfully!" : "Failed to delete question.";
     }
+
 }

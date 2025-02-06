@@ -2,10 +2,12 @@ package services;
 
 import models.Answer;
 import repositories.AnswerRepository;
+import factories.AnswerFactory;
+import services.Iservices.IAnswerService;
 
 import java.util.List;
 
-public class AnswerService {
+public class AnswerService implements IAnswerService {
 
     private final AnswerRepository answerRepo;
 
@@ -13,7 +15,7 @@ public class AnswerService {
         this.answerRepo = answerRepo;
     }
 
-
+    @Override
     public List<Answer> getAnswersByQuestion(int questionId) {
         if (questionId <= 0) {
             throw new IllegalArgumentException("Question ID must be greater than 0.");
@@ -21,16 +23,18 @@ public class AnswerService {
         return answerRepo.getAnswersByQuestion(questionId);
     }
 
-
+    @Override
     public boolean addAnswer(Answer answer) {
-        if (answer == null || !answer.isValid()) {
-            throw new IllegalArgumentException("Answer text cannot be null, empty, or associated with an invalid question.");
+        try {
+            Answer validatedAnswer = AnswerFactory.createAnswer(answer.getQuestionId(), answer.getAnswerText(), answer.isCorrectAnswer());
+            return answerRepo.addAnswer(validatedAnswer);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error adding answer: " + e.getMessage());
+            return false;
         }
-
-        return answerRepo.addAnswer(answer);
     }
 
-
+    @Override
     public boolean deleteAnswer(int answerId) {
         if (answerId <= 0) {
             throw new IllegalArgumentException("Invalid answer ID.");
@@ -39,7 +43,7 @@ public class AnswerService {
         return answerRepo.deleteAnswer(answerId);
     }
 
-
+    @Override
     public boolean updateAnswer(Answer answer) {
         if (answer == null || !answer.isValid()) {
             throw new IllegalArgumentException("Answer cannot be null or invalid.");

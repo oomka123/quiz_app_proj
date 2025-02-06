@@ -1,11 +1,12 @@
 package controllers;
 
+import controllers.Icontollers.IAnswerController;
 import models.Answer;
 import services.AnswerService;
 
 import java.util.List;
 
-public class AnswerController {
+public class AnswerController implements IAnswerController {
 
     private final AnswerService answerService;
 
@@ -13,7 +14,7 @@ public class AnswerController {
         this.answerService = answerService;
     }
 
-
+    @Override
     public List<Answer> getAnswersByQuestion(int questionId) {
         try {
             return answerService.getAnswersByQuestion(questionId);
@@ -23,7 +24,7 @@ public class AnswerController {
         }
     }
 
-
+    @Override
     public boolean addAnswer(Answer answer) {
         try {
             return answerService.addAnswer(answer);
@@ -33,7 +34,7 @@ public class AnswerController {
         }
     }
 
-
+    @Override
     public boolean deleteAnswer(int answerId) {
         try {
             return answerService.deleteAnswer(answerId);
@@ -43,7 +44,7 @@ public class AnswerController {
         }
     }
 
-
+    @Override
     public boolean updateAnswer(Answer answer) {
         try {
             return answerService.updateAnswer(answer);

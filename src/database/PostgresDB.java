@@ -1,10 +1,12 @@
 package database;
 
+import database.Idatabase.IPostgresDB;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class PostgresDB {
+public class PostgresDB implements IPostgresDB {
     private static volatile PostgresDB instance;
     private Connection connection;
 
@@ -21,11 +23,10 @@ public class PostgresDB {
         this.connection = createConnection();
     }
 
-    // Метод для создания единственного экземпляра PostgresDB
     public static PostgresDB getInstance(String host, String username, String password, String dbName) {
         if (instance == null) {
             synchronized (PostgresDB.class) {
-                if (instance == null) { // Double-checked locking
+                if (instance == null) {
                     instance = new PostgresDB(host, username, password, dbName);
                 }
             }
@@ -33,7 +34,6 @@ public class PostgresDB {
         return instance;
     }
 
-    // Метод для установления соединения с БД
     private Connection createConnection() {
         String connectionUrl = host + "/" + dbName;
         try {
@@ -45,7 +45,7 @@ public class PostgresDB {
         }
     }
 
-    // Метод для получения соединения (гарантирует, что соединение живо)
+    @Override
     public Connection getConnection() {
         try {
             if (connection == null || connection.isClosed()) {
@@ -57,7 +57,7 @@ public class PostgresDB {
         return connection;
     }
 
-    // Закрытие соединения
+    @Override
     public void close() {
         if (connection != null) {
             try {

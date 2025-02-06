@@ -2,6 +2,7 @@ package repositories;
 
 import database.PostgresDB;
 import models.Question;
+import repositories.Irepositories.IQuestionRepository;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,7 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class QuestionRepository {
+public class QuestionRepository implements IQuestionRepository {
 
     private final PostgresDB db;
 
@@ -18,6 +19,7 @@ public class QuestionRepository {
         this.db = db;
     }
 
+    @Override
     public List<Question> getQuestionsByQuiz(int quizId) {
         List<Question> questions = new ArrayList<>();
         Connection con = null;
@@ -52,7 +54,8 @@ public class QuestionRepository {
         return questions;
     }
 
-    public boolean addQuestion(Question question) {
+    @Override
+    public boolean addQuestion(String questionText, int quizId) {
         Connection con = null;
         boolean result = false;
 
@@ -62,15 +65,15 @@ public class QuestionRepository {
                 String sql = "INSERT INTO questions (quiz_id, question_text) VALUES (?, ?)";
                 PreparedStatement st = con.prepareStatement(sql);
 
-                st.setInt(1, question.getQuizId());
-                st.setString(2, question.getQuestionText());
+                st.setInt(1, quizId);
+                st.setString(2, questionText);
 
                 int rows = st.executeUpdate();
                 result = rows > 0;
 
                 if (result) {
 
-                    updateQuestionCount(question.getQuizId());
+                    updateQuestionCount(quizId);
                 }
             }
         } catch (SQLException e) {
@@ -86,6 +89,7 @@ public class QuestionRepository {
         return result;
     }
 
+    @Override
     public boolean deleteQuestion(int questionId) {
         Connection con = null;
         boolean result = false;
@@ -143,4 +147,24 @@ public class QuestionRepository {
             System.out.println("SQL error in updateQuestionCount: " + e.getMessage());
         }
     }
+
+    @Override
+    public int getOptionsCount(int questionId) {
+        String sql = "SELECT COUNT(*) AS option_count FROM answers WHERE question_id = ?";
+
+        try (Connection con = db.getConnection();
+             PreparedStatement st = con.prepareStatement(sql)) {
+            st.setInt(1, questionId);
+
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("option_count");  // Возвращаем количество вариантов
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("SQL error in getOptionsCount: " + e.getMessage());
+        }
+        return 0; // Если не найдено вариантов
+    }
+
 }

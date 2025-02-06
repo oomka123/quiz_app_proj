@@ -1,10 +1,13 @@
 package models;
 
-public class User {
+import enums.RoleCategory;
+import models.Imodels.IUser;
+
+public class User implements IUser {
     private int userId;
     private String userName;
     private String userPassword;
-    private Role role;
+    private RoleCategory role;
 
 
     public enum Role {
@@ -12,7 +15,7 @@ public class User {
     }
 
 
-    public User(int userId, String userName, String userPassword, Role role) {
+    public User(int userId, String userName, String userPassword, RoleCategory role) {
         this.userId = userId;
         this.userName = userName;
         this.userPassword = userPassword;
@@ -23,39 +26,46 @@ public class User {
     public User(String userName, String userPassword) {
         this.userName = userName;
         this.userPassword = userPassword;
-        this.role = Role.USER;
+        this.role = RoleCategory.USER;
     }
 
-
+    @Override
     public int getUserId() {
         return userId;
     }
 
+    @Override
     public void setUserId(int userId) {
         this.userId = userId;
     }
 
+    @Override
     public String getUserName() {
         return userName;
     }
 
+    @Override
     public void setUserName(String userName) {
         this.userName = userName;
     }
 
+    @Override
     public String getUserPassword() {
         return userPassword;
     }
 
+    @Override
     public void setUserPassword(String userPassword) {
         this.userPassword = userPassword;
     }
 
-    public Role getRole() {
+    @Override
+    public RoleCategory getRole() {
         return role;
     }
 
-    public void setRole(Role role) {
+    @Override
+    public void setRole(RoleCategory role) {
         this.role = role;
     }
 }

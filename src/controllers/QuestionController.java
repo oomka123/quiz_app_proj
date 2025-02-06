@@ -1,12 +1,13 @@
 package controllers;
 
+import controllers.Icontollers.IQuestionController;
 import models.Question;
 import repositories.QuestionRepository;
 import services.QuestionService;
 
 import java.util.List;
 
-public class QuestionController {
+public class QuestionController implements IQuestionController {
 
     private final QuestionService questionService;
 
@@ -14,6 +15,7 @@ public class QuestionController {
         this.questionService = questionService;
     }
 
+    @Override
     public List<Question> getQuestionsByQuiz(int quizId) {
         try {
             return questionService.getQuestionsByQuiz(quizId);
@@ -23,10 +25,12 @@ public class QuestionController {
         }
     }
 
-    public String addQuestion(Question question) {
-        return questionService.addQuestion(question);
+    @Override
+    public String addQuestion(String questionText, int quizId) {
+        return questionService.addQuestion(questionText, quizId);
     }
 
+    @Override
     public String deleteQuestion(int questionId) {
         return questionService.deleteQuestion(questionId);
     }
