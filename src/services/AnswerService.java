@@ -3,15 +3,16 @@ package services;
 import models.Answer;
 import repositories.AnswerRepository;
 import factories.AnswerFactory;
+import repositories.Irepositories.IAnswerRepository;
 import services.Iservices.IAnswerService;
 
 import java.util.List;
 
 public class AnswerService implements IAnswerService {
 
-    private final AnswerRepository answerRepo;
+    private final IAnswerRepository answerRepo;
 
-    public AnswerService(AnswerRepository answerRepo) {
+    public AnswerService(IAnswerRepository answerRepo) {
         this.answerRepo = answerRepo;
     }
 

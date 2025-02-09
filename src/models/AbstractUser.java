@@ -3,30 +3,17 @@ package models;
 import enums.RoleCategory;
 import models.Imodels.IUser;
 
-public class User implements IUser {
-    private int userId;
-    private String userName;
-    private String userPassword;
-    private RoleCategory role;
+public abstract class AbstractUser implements IUser {
+    protected int userId;
+    protected String userName;
+    protected String userPassword;
+    protected RoleCategory role;
 
-
-    public enum Role {
-        ADMIN, EDITOR, USER
-    }
-
-
-    public User(int userId, String userName, String userPassword, RoleCategory role) {
+    public AbstractUser(int userId, String userName, String userPassword, RoleCategory role) {
         this.userId = userId;
         this.userName = userName;
         this.userPassword = userPassword;
         this.role = role;
-    }
-
-
-    public User(String userName, String userPassword) {
-        this.userName = userName;
-        this.userPassword = userPassword;
-        this.role = RoleCategory.USER;
     }
 
     @Override
@@ -62,10 +49,5 @@ public class User implements IUser {
     @Override
     public RoleCategory getRole() {
         return role;
-    }
-
-    @Override
-    public void setRole(RoleCategory role) {
-        this.role = role;
     }
 }

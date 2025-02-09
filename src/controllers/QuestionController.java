@@ -2,16 +2,15 @@ package controllers;
 
 import controllers.Icontollers.IQuestionController;
 import models.Question;
-import repositories.QuestionRepository;
-import services.QuestionService;
+import services.Iservices.IQuestionService;
 
 import java.util.List;
 
 public class QuestionController implements IQuestionController {
 
-    private final QuestionService questionService;
+    private final IQuestionService questionService;
 
-    public QuestionController(QuestionService questionService) {
+    public QuestionController(IQuestionService questionService) {
         this.questionService = questionService;
     }
 

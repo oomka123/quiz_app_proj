@@ -1,21 +1,22 @@
 package application.handlers;
 
-import models.User;
-import controllers.AuthController;
-import controllers.QuizController;
+import models.AbstractUser;
+import controllers.Icontollers.IAuthController;
+import controllers.Icontollers.IQuizController;
 import enums.RoleCategory;
 
 
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 
 public class UserHandler {
-    private final AuthController authController;
-    private final QuizController quizController;
+    private final IAuthController authController;
+    private final IQuizController quizController;
     private final Scanner scanner;
-    private User currentUser;
+    private AbstractUser currentUser;
 
-    public UserHandler(AuthController authController, QuizController quizController, Scanner scanner) {
+    public UserHandler(IAuthController authController, IQuizController quizController, Scanner scanner) {
         this.authController = authController;
         this.quizController = quizController;
         this.scanner = scanner;
@@ -31,14 +32,17 @@ public class UserHandler {
             String response = authController.registerUser(username, password);
             System.out.println(response);
 
-            if (response.equals("Registration successful!")) {
+            if ("Registration successful!".equals(response)) {
                 currentUser = authController.loginUser(username, password);
-                if (currentUser != null) {
-                    System.out.println("Registration and login successful! Welcome, " + currentUser.getUserName());
-                }
+                System.out.println(currentUser != null
+                        ? "Registration and login successful! Welcome, " + currentUser.getUserName()
+                        : "Registration successful, but login failed.");
+            } else {
+                currentUser = null;
             }
         } catch (Exception e) {
             System.out.println("Error in registration: " + e.getMessage());
+            currentUser = null;
         }
     }
 
@@ -49,15 +53,13 @@ public class UserHandler {
             System.out.print("Enter password: ");
             String password = scanner.nextLine();
 
-            User user = authController.loginUser(username, password);
-            if (user != null) {
-                currentUser = user;
-                System.out.println("Login successful! Welcome, " + user.getUserName());
-            } else {
-                System.out.println("Invalid username or password. Please try again.");
-            }
+            currentUser = authController.loginUser(username, password);
+            System.out.println(currentUser != null
+                    ? "Login successful! Welcome, " + currentUser.getUserName()
+                    : "Invalid username or password. Please try again.");
         } catch (Exception e) {
             System.out.println("Error in login: " + e.getMessage());
+            currentUser = null;
         }
     }
 
@@ -73,37 +75,34 @@ public class UserHandler {
         System.out.println("List of Users:");
         users.forEach(user -> {
             RoleCategory role = RoleCategory.valueOf(user.getRole().name());
-            int quizCount = quizCounts.getOrDefault(user.getUserId(), 0); // Если квизов нет, ставим 0
+            int quizCount = quizCounts.getOrDefault(user.getUserId(), 0);
 
-            if (currentUser.getRole() == RoleCategory.ADMIN) {
-                System.out.println("ID: " + user.getUserId() +
-                        " | Username: " + user.getUserName() +
-                        " | Role: " + role +
-                        " | Password: " + user.getUserPassword() +
-                        " | Count of quizzes: " + quizCount);
-            } else {
-                System.out.println("ID: " + user.getUserId() +
-                        " | Username: " + user.getUserName() +
-                        " | Role: " + role +
-                        " | Count of quizzes: " + quizCount);
-            }
+            System.out.println("ID: " + user.getUserId() +
+                    " | Username: " + user.getUserName() +
+                    " | Role: " + role +
+                    (currentUser.getRole() == RoleCategory.ADMIN
+                            ? " | Password: " + user.getUserPassword()
+                            : "") +
+                    " | Count of quizzes: " + quizCount);
         });
     }
 
-    public User chooseUser() {
+    public AbstractUser chooseUser() {
         System.out.println("Enter the ID of the user you want to manage:");
 
-        var users = authController.getAllUsers();
+        var users = authController.getAllUsers()
+                .stream()
+                .filter(user -> user.getRole() != RoleCategory.ADMIN)
+                .toList();
+
         if (users.isEmpty()) {
-            System.out.println("No users found.");
+            System.out.println("No users available to manage.");
             return null;
         }
 
-        for (var user : users) {
-            System.out.println("ID: " + user.getUserId() +
-                    " | Username: " + user.getUserName() +
-                    " | Role: " + user.getRole().name());
-        }
+        users.forEach(user -> System.out.println(
+                "ID: " + user.getUserId() + " | Username: " + user.getUserName() +
+                        " | Role: " + user.getRole().name()));
 
         System.out.print("Enter user ID, or 0 to cancel: ");
         int selectedId = scanner.nextInt();
@@ -114,22 +113,29 @@ public class UserHandler {
             return null;
         }
 
-        User selectedUser = authController.getUserById(selectedId);
-        if (selectedUser == null) {
-            System.out.println("User with ID " + selectedId + " not found.");
+        AbstractUser selectedUser = authController.getUserById(selectedId);
+        if (selectedUser == null || selectedUser.getRole() == RoleCategory.ADMIN) {
+            System.out.println("Invalid selection. Admin users cannot be managed.");
+            return null;
         }
+
         return selectedUser;
     }
 
+
     public static class RolePermissions {
-        public static boolean canEditContent(User user) {
-            return user.getRole() == RoleCategory.ADMIN || user.getRole() == RoleCategory.EDITOR;
+        private static final Set<RoleCategory> CAN_MANAGE_USERS = Set.of(RoleCategory.ADMIN);
+        private static final Set<RoleCategory> CAN_EDIT_CONTENT = Set.of(RoleCategory.ADMIN, RoleCategory.EDITOR);
+
+        public static boolean canManageUsers(AbstractUser user) {
+            return user != null && CAN_MANAGE_USERS.contains(user.getRole());
         }
 
-        public static boolean canManageUsers(User user) {
-            return user.getRole() == RoleCategory.ADMIN;
+        public static boolean canEditContent(AbstractUser user) {
+            return user != null && CAN_EDIT_CONTENT.contains(user.getRole());
         }
     }
+
 
     public void changeUserRole() {
         if (!RolePermissions.canManageUsers(currentUser)) {
@@ -162,19 +168,15 @@ public class UserHandler {
     }
 
     public void deleteUser() {
-
         var users = authController.getAllUsers();
         if (users.isEmpty()) {
             System.out.println("No users found.");
             return;
         }
 
-        System.out.println("List of Users:");
-        for (var user : users) {
-            System.out.println("ID: " + user.getUserId() +
-                    " | Username: " + user.getUserName() +
-                    " | Role: " + user.getRole().name());
-        }
+        users.forEach(user -> System.out.println(
+                "ID: " + user.getUserId() + " | Username: " + user.getUserName() +
+                        " | Role: " + user.getRole().name()));
 
         System.out.print("Enter the ID of the user you want to delete, or 0 to cancel: ");
         int selectedId = scanner.nextInt();
@@ -185,19 +187,13 @@ public class UserHandler {
             return;
         }
 
-        User userToDelete = authController.getUserById(selectedId);
-        if (userToDelete == null) {
-            System.out.println("User with ID " + selectedId + " not found.");
-            return;
-        }
-
-        String result = authController.deleteUser(selectedId);
-
-        System.out.println(result);
+        AbstractUser userToDelete = authController.getUserById(selectedId);
+        System.out.println(userToDelete == null
+                ? "User with ID " + selectedId + " not found."
+                : authController.deleteUser(selectedId));
     }
 
-
-    public User getCurrentUser() {
+    public AbstractUser getCurrentUser() {
         return currentUser;
     }
 

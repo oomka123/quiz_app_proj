@@ -2,15 +2,15 @@ package controllers;
 
 import controllers.Icontollers.IAnswerController;
 import models.Answer;
-import services.AnswerService;
+import services.Iservices.IAnswerService;
 
 import java.util.List;
 
 public class AnswerController implements IAnswerController {
 
-    private final AnswerService answerService;
+    private final IAnswerService answerService;
 
-    public AnswerController(AnswerService answerService) {
+    public AnswerController(IAnswerService answerService) {
         this.answerService = answerService;
     }
 

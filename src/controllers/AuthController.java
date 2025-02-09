@@ -1,58 +1,53 @@
 package controllers;
 
 import controllers.Icontollers.IAuthController;
-import models.User;
+import models.AbstractUser;
 import enums.RoleCategory;
-import services.UserService;
-
+import services.Iservices.IUserAuthService;
+import services.Iservices.IUserManagementService;
 import java.util.List;
 
-public class AuthController implements IAuthController {
-    private final UserService userService;
+public class AuthController implements IAuthController, IUserManagementService {
+    private final IUserAuthService authService;
+    private final IUserManagementService managementService;
 
-    public AuthController(UserService userService) {
-        this.userService = userService;
+    public AuthController(IUserAuthService authService, IUserManagementService managementService) {
+        this.authService = authService;
+        this.managementService = managementService;
     }
 
     @Override
     public String registerUser(String username, String password) {
-        return userService.registerUser(username, password);
+        return authService.registerUser(username, password);
     }
 
     @Override
-    public User loginUser(String username, String password) {
-        return userService.loginUser(username, password);
+    public AbstractUser loginUser(String username, String password) {
+        return authService.loginUser(username, password);
     }
 
     @Override
     public String getUserRole(int userId) {
-        return userService.getUserRole(userId);
+        return managementService.getUserRole(userId);
     }
 
     @Override
     public String updateUserRole(int adminId, int userId, RoleCategory newRole) {
-        User admin = userService.getUserById(adminId);
-        if (admin == null || admin.getRole() != RoleCategory.ADMIN) { // Проверяем роль через enum
-            return "Access denied! Only ADMIN can change roles.";
-        }
-
-        boolean updated = userService.updateUserRole(userId, newRole.name()); // Преобразуем Enum в String
-        return updated ? "User role updated successfully!" : "Failed to update role.";
+        return managementService.updateUserRole(adminId, userId, newRole);
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<AbstractUser> getAllUsers() {
+        return managementService.getAllUsers();
     }
 
     @Override
-    public User getUserById(int userId) {
-        return userService.getUserById(userId);
+    public AbstractUser getUserById(int userId) {
+        return managementService.getUserById(userId);
     }
 
+    @Override
     public String deleteUser(int userId) {
-        boolean isDeleted = userService.deleteUser(userId);
-        return isDeleted ? "User deleted successfully!" : "Failed to delete user.";
+        return managementService.deleteUser(userId);
     }
-
 }

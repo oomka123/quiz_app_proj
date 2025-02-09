@@ -1,8 +1,9 @@
 package repositories;
 
 import database.PostgresDB;
-import models.User;
 import enums.RoleCategory;
+import factories.UserFactory;
+import models.AbstractUser;
 import repositories.Irepositories.IUserRepository;
 
 import java.sql.Connection;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserRepository implements IUserRepository {
+
     private final PostgresDB db;
 
     public UserRepository(PostgresDB db) {
@@ -20,9 +22,9 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public boolean userRegistration(User user) {
+    public boolean userRegistration(AbstractUser user) {
         String checkSql = "SELECT COUNT(*) FROM users WHERE user_name = ?";
-        String insertSql = "INSERT INTO users(user_name, user_password, role) VALUES (?, ?, ?)";
+        String insertSql = "INSERT INTO users(user_name, user_password, role) VALUES (?, ?, USER)";
 
         try (Connection con = db.getConnection();
              PreparedStatement checkSt = con.prepareStatement(checkSql);
@@ -33,7 +35,6 @@ public class UserRepository implements IUserRepository {
             if (rs.next() && rs.getInt(1) == 0) {
                 insertSt.setString(1, user.getUserName());
                 insertSt.setString(2, user.getUserPassword());
-
                 insertSt.setString(3, user.getRole().toString());
 
                 return insertSt.executeUpdate() > 0;
@@ -47,21 +48,16 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public User userLogin(User user) {
+    public AbstractUser userLogin(String username, String password) {
         String sql = "SELECT * FROM users WHERE user_name = ? AND user_password = ?";
 
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement(sql)) {
-            st.setString(1, user.getUserName());
-            st.setString(2, user.getUserPassword());
+            st.setString(1, username);
+            st.setString(2, password);
             ResultSet rs = st.executeQuery();
             if (rs.next()) {
-                int userId = rs.getInt("user_id");
-                String userName = rs.getString("user_name");
-                String userPassword = rs.getString("user_password");
-                String roleStr = rs.getString("role");
-                RoleCategory role = RoleCategory.valueOf(roleStr.toUpperCase());
-                return new User(userId, userName, userPassword, role);
+                return createUserFromResultSet(rs);
             }
         } catch (SQLException e) {
             System.out.println("SQL error in userLogin: " + e.getMessage());
@@ -70,7 +66,7 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public User getUserById(int userId) {
+    public AbstractUser getUserById(int userId) {
         String sql = "SELECT * FROM users WHERE user_id = ?";
 
         try (Connection con = db.getConnection();
@@ -78,11 +74,7 @@ public class UserRepository implements IUserRepository {
             st.setInt(1, userId);
             ResultSet rs = st.executeQuery();
             if (rs.next()) {
-                String userName = rs.getString("user_name");
-                String userPassword = rs.getString("user_password");
-                String roleStr = rs.getString("role");
-                RoleCategory role = RoleCategory.valueOf(roleStr.toUpperCase());
-                return new User(userId, userName, userPassword, role);
+                return createUserFromResultSet(rs);
             }
         } catch (SQLException e) {
             System.out.println("SQL error in getUserById: " + e.getMessage());
@@ -117,7 +109,7 @@ public class UserRepository implements IUserRepository {
         String sql = "UPDATE users SET role = ? WHERE user_id = ?";
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement(sql)) {
-            st.setString(1, newRole.getDisplayName()); // Получаем строковое представление роли
+            st.setString(1, newRole.getDisplayName());
             st.setInt(2, userId);
 
             return st.executeUpdate() > 0;
@@ -128,19 +120,19 @@ public class UserRepository implements IUserRepository {
     }
 
     @Override
-    public List<User> getAllUsers() {
-        List<User> users = new ArrayList<>();
+    public List<AbstractUser> getAllUsers() {
+        List<AbstractUser> users = new ArrayList<>();
         String sql = "SELECT * FROM users";
+
         try (Connection con = db.getConnection();
              PreparedStatement st = con.prepareStatement(sql);
              ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
-                int userId = rs.getInt("user_id");
-                String userName = rs.getString("user_name");
-                String userPassword = rs.getString("user_password");
-                String roleStr = rs.getString("role");
-                RoleCategory role = RoleCategory.valueOf(roleStr.toUpperCase());
-                users.add(new User(userId, userName, userPassword, role));
+                try {
+                    users.add(createUserFromResultSet(rs));
+                } catch (IllegalArgumentException e) {
+                    System.out.println("Skipping user due to invalid data: " + e.getMessage());
+                }
             }
         } catch (SQLException e) {
             System.out.println("SQL error in getAllUsers: " + e.getMessage());
@@ -148,12 +140,23 @@ public class UserRepository implements IUserRepository {
         return users;
     }
 
+    private AbstractUser createUserFromResultSet(ResultSet rs) throws SQLException {
+        int userId = rs.getInt("user_id");
+        String userName = rs.getString("user_name");
+        String userPassword = rs.getString("user_password");
+        String roleStr = rs.getString("role");
+
+        RoleCategory role = RoleCategory.valueOf(roleStr.toUpperCase());
+
+        return UserFactory.createUser(userId, userName, userPassword, role);
+    }
+
+    @Override
     public boolean deleteUser(int userId) {
         String deleteSql = "DELETE FROM users WHERE user_id = ?";
 
         try (Connection con = db.getConnection();
              PreparedStatement deleteSt = con.prepareStatement(deleteSql)) {
-
             deleteSt.setInt(1, userId);
             int rowsAffected = deleteSt.executeUpdate();
 
@@ -163,6 +166,4 @@ public class UserRepository implements IUserRepository {
         }
         return false;
     }
-
-
 }

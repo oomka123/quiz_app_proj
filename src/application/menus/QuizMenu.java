@@ -1,12 +1,16 @@
 package application.menus;
 
-import enums.RoleCategory;
-import models.User;
+import application.handlers.UserHandler;
+import models.AbstractUser;
 
 public class QuizMenu {
-    public void showQuizMenu(User currentUser) {
-        System.out.println();
-        System.out.println("Quiz Menu");
+    public void showQuizMenu(AbstractUser currentUser) {
+        if (currentUser == null) {
+            System.out.println("No user logged in. Returning to main menu...");
+            return;
+        }
+
+        System.out.println("\nQuiz Menu");
         System.out.println("Select option:");
         System.out.println("1. Start Quiz");
         System.out.println("2. Create Quiz");
@@ -14,17 +18,14 @@ public class QuizMenu {
         System.out.println("4. Delete Quizzes");
         System.out.println("5. Manage Questions");
 
-        // Преобразуем строку роли в Enum
-        RoleCategory role = RoleCategory.valueOf(currentUser.getRole().name());
-
-        if (role == RoleCategory.ADMIN) {
+        if (UserHandler.RolePermissions.canManageUsers(currentUser)) {
             System.out.println("6. Admin Panel");
         }
-        if (role == RoleCategory.EDITOR || role == RoleCategory.ADMIN) {
+        if (UserHandler.RolePermissions.canEditContent(currentUser)) {
             System.out.println("7. Editor Panel");
         }
-        System.out.println("0. Logout");
-        System.out.println();
+
+        System.out.println("0. Logout\n");
         System.out.print("Enter option (0-7): ");
     }
 }

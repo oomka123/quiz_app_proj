@@ -1,6 +1,6 @@
 package repositories;
 
-import database.PostgresDB;
+import database.Idatabase.IPostgresDB;
 import models.Quiz;
 import repositories.Irepositories.IQuizRepository;
 
@@ -12,9 +12,9 @@ import java.util.Map;
 
 public class QuizRepository implements IQuizRepository {
 
-    private final PostgresDB db;
+    private final IPostgresDB db;
 
-    public QuizRepository(PostgresDB db) {
+    public QuizRepository(IPostgresDB db) {
         this.db = db;
     }
 
@@ -50,12 +50,15 @@ public class QuizRepository implements IQuizRepository {
 
             try (ResultSet rs = st.executeQuery()) {
                 while (rs.next()) {
-                    int quizId = rs.getInt("quiz_id");
-                    String quizName = rs.getString("quiz_name");
-                    String category = rs.getString("category");
-                    int questionCount = rs.getInt("question_count");
+                    Quiz quiz = new Quiz.QuizBuilder()
+                            .setQuizId(rs.getInt("quiz_id"))
+                            .setQuizName(rs.getString("quiz_name"))
+                            .setUserId(userId)
+                            .setCategory(rs.getString("category"))
+                            .setQuestionCount(rs.getInt("question_count"))
+                            .build();
 
-                    quizzez.add(new Quiz(quizId, quizName, userId, category, questionCount));
+                    quizzez.add(quiz);
                 }
             }
         } catch (SQLException e) {
@@ -114,12 +117,14 @@ public class QuizRepository implements IQuizRepository {
             ResultSet rs = st.executeQuery();
 
             while (rs.next()) {
-                quizzez.add(new Quiz(
-                        rs.getInt("quiz_id"),
-                        rs.getString("quiz_name"),
-                        rs.getInt("user_id"),
-                        rs.getString("category")
-                ));
+                Quiz quiz = new Quiz.QuizBuilder()
+                        .setQuizId(rs.getInt("quiz_id"))
+                        .setQuizName(rs.getString("quiz_name"))
+                        .setUserId(rs.getInt("user_id"))
+                        .setCategory(rs.getString("category"))
+                        .build();
+
+                quizzez.add(quiz);
             }
         } catch (SQLException e) {
             System.out.println("SQL error in getQuizzesByCategory: " + e.getMessage());

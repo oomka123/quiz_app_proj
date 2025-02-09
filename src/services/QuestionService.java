@@ -2,6 +2,7 @@ package services;
 
 import factories.QuestionFactory;
 import models.Question;
+import repositories.Irepositories.IQuestionRepository;
 import repositories.QuestionRepository;
 import services.Iservices.IQuestionService;
 
@@ -9,9 +10,9 @@ import java.util.List;
 
 public class QuestionService implements IQuestionService {
 
-    private final QuestionRepository questionRepo;
+    private final IQuestionRepository questionRepo;
 
-    public QuestionService(QuestionRepository questionRepo) {
+    public QuestionService(IQuestionRepository questionRepo) {
         this.questionRepo = questionRepo;
     }
 

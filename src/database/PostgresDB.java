@@ -63,7 +63,7 @@ public class PostgresDB implements IPostgresDB {
             try {
                 connection.close();
                 connection = null;
-                instance = null; // Позволяет пересоздать соединение, если потребуется
+                instance = null;
             } catch (SQLException ex) {
                 System.out.println("Connection close error: " + ex.getMessage());
             }

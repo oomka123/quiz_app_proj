@@ -1,5 +1,6 @@
 package repositories;
 
+import database.Idatabase.IPostgresDB;
 import database.PostgresDB;
 import models.Answer;
 import repositories.Irepositories.IAnswerRepository;
@@ -10,9 +11,9 @@ import java.util.List;
 
 public class AnswerRepository implements IAnswerRepository {
 
-    private final PostgresDB db;
+    private final IPostgresDB db;
 
-    public AnswerRepository(PostgresDB db) {
+    public AnswerRepository(IPostgresDB db) {
         this.db = db;
     }
 

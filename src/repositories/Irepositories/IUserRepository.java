@@ -1,14 +1,15 @@
 package repositories.Irepositories;
 
-import models.User;
+import models.AbstractUser;
 import enums.RoleCategory;
 import java.util.List;
 
 public interface IUserRepository {
-    boolean userRegistration(User user);
-    User userLogin(User user);
-    User getUserById(int userId);
+    boolean userRegistration(AbstractUser user);
+    AbstractUser userLogin(String username, String password);
+    AbstractUser getUserById(int userId);
     String getUserRole(int userId);
     boolean updateUserRole(int userId, RoleCategory newRole);
-    List<User> getAllUsers();
+    List<AbstractUser> getAllUsers();
+    boolean deleteUser(int userId);
 }

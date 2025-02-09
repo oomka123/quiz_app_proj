@@ -1,17 +1,16 @@
 package controllers;
 
 import controllers.Icontollers.IQuizController;
-import models.Question;
 import models.Quiz;
-import services.QuizService;
+import services.Iservices.IQuizService;
 
 import java.util.List;
 import java.util.Map;
 
 public class QuizController implements IQuizController {
-    private final QuizService quizService;
+    private final IQuizService quizService;
 
-    public QuizController(QuizService quizService) {
+    public QuizController(IQuizService quizService) {
         this.quizService = quizService;
     }
 

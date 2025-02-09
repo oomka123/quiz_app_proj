@@ -1,5 +1,6 @@
 package repositories;
 
+import database.Idatabase.IPostgresDB;
 import database.PostgresDB;
 import models.Question;
 import repositories.Irepositories.IQuestionRepository;
@@ -13,9 +14,9 @@ import java.util.List;
 
 public class QuestionRepository implements IQuestionRepository {
 
-    private final PostgresDB db;
+    private final IPostgresDB db;
 
-    public QuestionRepository(PostgresDB db) {
+    public QuestionRepository(IPostgresDB db) {
         this.db = db;
     }
 
@@ -158,13 +159,13 @@ public class QuestionRepository implements IQuestionRepository {
 
             try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt("option_count");  // Возвращаем количество вариантов
+                    return rs.getInt("option_count");
                 }
             }
         } catch (SQLException e) {
             System.out.println("SQL error in getOptionsCount: " + e.getMessage());
         }
-        return 0; // Если не найдено вариантов
+        return 0;
     }
 
 }

@@ -1,16 +1,23 @@
+import application.MyApplication;
 import controllers.AnswerController;
 import controllers.AuthController;
+import controllers.Icontollers.IAnswerController;
+import controllers.Icontollers.IAuthController;
+import controllers.Icontollers.IQuestionController;
+import controllers.Icontollers.IQuizController;
 import controllers.QuestionController;
 import controllers.QuizController;
 import database.PostgresDB;
+import repositories.Irepositories.IAnswerRepository;
+import repositories.Irepositories.IQuestionRepository;
+import repositories.Irepositories.IQuizRepository;
+import repositories.Irepositories.IUserRepository;
 import repositories.AnswerRepository;
 import repositories.QuestionRepository;
 import repositories.QuizRepository;
 import repositories.UserRepository;
-import services.AnswerService;
-import services.QuestionService;
-import services.QuizService;
-import services.UserService;
+import services.*;
+import services.Iservices.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -20,22 +27,28 @@ public class Main {
         String password = "0000";
         String dbName = "quiz_app";
 
+
         PostgresDB db = PostgresDB.getInstance(host, username, password, dbName);
 
-        UserRepository userRepo = new UserRepository(db);
-        QuizRepository quizRepo = new QuizRepository(db);
-        QuestionRepository questionRepo = new QuestionRepository(db);
-        AnswerRepository answerRepo = new AnswerRepository(db);
 
-        UserService userService = new UserService(userRepo);
-        QuizService quizService = new QuizService(quizRepo);
-        QuestionService questionService = new QuestionService(questionRepo);
-        AnswerService answerService = new AnswerService(answerRepo);
+        IUserRepository userRepo = new UserRepository(db);
+        IQuizRepository quizRepo = new QuizRepository(db);
+        IQuestionRepository questionRepo = new QuestionRepository(db);
+        IAnswerRepository answerRepo = new AnswerRepository(db);
 
-        AuthController authController = new AuthController(userService);
-        QuizController quizController = new QuizController(quizService);
-        QuestionController questionController = new QuestionController(questionService);
-        AnswerController answerController = new AnswerController(answerService);
+
+        IUserAuthService authService = new UserService(userRepo);
+        IUserManagementService managementService = (IUserManagementService) authService;
+        IQuizService quizService = new QuizService(quizRepo);
+        IQuestionService questionService = new QuestionService(questionRepo);
+        IAnswerService answerService = new AnswerService(answerRepo);
+
+
+        IAuthController authController = new AuthController(authService, managementService);
+        IQuizController quizController = new QuizController(quizService);
+        IQuestionController questionController = new QuestionController(questionService);
+        IAnswerController answerController = new AnswerController(answerService);
+
 
         MyApplication app = new MyApplication(authController, quizController, questionController, answerController);
         app.start();

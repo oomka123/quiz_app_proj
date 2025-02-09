@@ -1,13 +1,9 @@
 package application;
 
-import models.Answer;
-import models.IncorrectAnswer;
-import models.Question;
-import models.Quiz;
-import controllers.QuizController;
-import controllers.QuestionController;
-import controllers.AnswerController;
-import models.User;
+import controllers.Icontollers.IAnswerController;
+import controllers.Icontollers.IQuestionController;
+import controllers.Icontollers.IQuizController;
+import models.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,20 +12,20 @@ import java.util.Scanner;
 
 public class StartQuiz {
 
-    private final QuizController quizController;
-    private final QuestionController questionController;
-    private final AnswerController answerController;
+    private final IQuizController quizController;
+    private final IQuestionController questionController;
+    private final IAnswerController answerController;
     private final Scanner scanner;
 
-    public StartQuiz(QuizController quizController, QuestionController questionController,
-                     AnswerController answerController, Scanner scanner) {
+    public StartQuiz(IQuizController quizController, IQuestionController questionController,
+                     IAnswerController answerController, Scanner scanner) {
         this.quizController = quizController;
         this.questionController = questionController;
         this.answerController = answerController;
         this.scanner = scanner;
     }
 
-    public void startQuiz(User currentUser) {
+    public void startQuiz(AbstractUser currentUser) {
         List<Quiz> quizzes = quizController.showQuizzes(currentUser.getUserId());
         if (quizzes.isEmpty()) {
             System.out.println("No quizzes available.");
@@ -40,11 +36,20 @@ public class StartQuiz {
         for (int i = 0; i < quizzes.size(); i++) {
             System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName());
         }
+        System.out.println("Enter 0 to exit.");
 
-        int quizIndex = getIntInput("Select a quiz by number: ", 1, quizzes.size());
+        int quizIndex = getIntInput("Select a quiz by number: ", 0, quizzes.size());
+        if (quizIndex == 0) {
+            System.out.println("Exiting quiz selection.");
+            return;
+        }
+
         int quizId = quizzes.get(quizIndex - 1).getQuizId();
-
         boolean restartQuiz;
+        int totalQuestions = 0;
+        int correctAnswers = 0;
+        List<IncorrectAnswer> incorrectAnswers = new ArrayList<>();
+
         do {
             restartQuiz = false;
             List<Question> allQuestions = questionController.getQuestionsByQuiz(quizId);
@@ -68,12 +73,11 @@ public class StartQuiz {
             }
 
             System.out.println("Starting the quiz...");
-
             Collections.shuffle(questionsWithAnswers);
-            int totalQuestions = questionsWithAnswers.size();
-            int correctAnswers = 0;
-            List<IncorrectAnswer> incorrectAnswers = new ArrayList<>();
-            // qwe
+            totalQuestions = questionsWithAnswers.size();
+            correctAnswers = 0;
+            incorrectAnswers.clear();
+
             for (int i = 0; i < totalQuestions; i++) {
                 Question question = questionsWithAnswers.get(i);
                 System.out.println("Question " + (i + 1) + ": " + question.getQuestionText());
@@ -84,8 +88,14 @@ public class StartQuiz {
                 for (int j = 0; j < answers.size(); j++) {
                     System.out.println((j + 1) + ". " + answers.get(j).getAnswerText());
                 }
+                System.out.println("Enter 0 to exit.");
 
-                int answerIndex = getIntInput("Enter the number of your answer: ", 1, answers.size());
+                int answerIndex = getIntInput("Enter the number of your answer: ", 0, answers.size());
+                if (answerIndex == 0) {
+                    System.out.println("Exiting quiz early.");
+                    break;
+                }
+
                 Answer userAnswer = answers.get(answerIndex - 1);
 
                 if (userAnswer.isCorrectAnswer()) {
@@ -96,7 +106,6 @@ public class StartQuiz {
                     Answer correctAnswer = answers.stream().filter(Answer::isCorrectAnswer).findFirst().orElse(null);
                     incorrectAnswers.add(new IncorrectAnswer(question, userAnswer, correctAnswer));
                 }
-
                 System.out.println();
             }
 
@@ -109,8 +118,7 @@ public class StartQuiz {
                     for (IncorrectAnswer incorrect : incorrectAnswers) {
                         System.out.println("Question: " + incorrect.getQuestion().getQuestionText());
                         System.out.println("Your Answer: " + incorrect.getUserAnswer().getAnswerText());
-                        System.out.println("Correct Answer: " +
-                                (incorrect.getCorrectAnswer() != null ? incorrect.getCorrectAnswer().getAnswerText() : "No correct answer found."));
+                        System.out.println("Correct Answer: " + (incorrect.getCorrectAnswer() != null ? incorrect.getCorrectAnswer().getAnswerText() : "No correct answer found."));
                         System.out.println();
                     }
                 }
@@ -139,4 +147,5 @@ public class StartQuiz {
             System.out.println("Invalid input. Please enter a number between " + min + " and " + max + ".");
         }
     }
+
 }

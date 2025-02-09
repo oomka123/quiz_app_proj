@@ -1,24 +1,26 @@
 package services;
 
-import models.User;
-import factories.UserFactory;
-import repositories.UserRepository;
 import enums.RoleCategory;
-import services.Iservices.IUserService;
-
+import factories.UserFactory;
+import models.AbstractUser;
+import models.RegularUser;
+import repositories.Irepositories.IUserRepository;
+import services.Iservices.IUserAuthService;
+import services.Iservices.IUserManagementService;
 import java.util.List;
 
-public class UserService implements IUserService {
-    private final UserRepository userRepo;
+public class UserService implements IUserAuthService, IUserManagementService {
 
-    public UserService(UserRepository userRepo) {
+    private final IUserRepository userRepo;
+
+    public UserService(IUserRepository userRepo) {
         this.userRepo = userRepo;
     }
 
     @Override
     public String registerUser(String username, String password) {
         try {
-            User user = UserFactory.createUser(username, password);
+            RegularUser user = UserFactory.createUser(username, password);
             if (userRepo.userRegistration(user)) {
                 return "Registration successful!";
             } else {
@@ -30,11 +32,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User loginUser(String username, String password) {
+    public AbstractUser loginUser(String username, String password) {
         try {
-            User user = UserFactory.createUser(username, password);
-            return userRepo.userLogin(user);
-
+            return userRepo.userLogin(username, password);
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
             return null;
@@ -42,7 +42,7 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public User getUserById(int userId) {
+    public AbstractUser getUserById(int userId) {
         return userRepo.getUserById(userId);
     }
 
@@ -52,26 +52,23 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public boolean updateUserRole(int userId, String newRole) {
-        RoleCategory roleCategory;
-
-        try {
-            roleCategory = RoleCategory.valueOf(newRole.toUpperCase()); // Преобразуем строку в Enum
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid role: " + newRole);
-            return false;
+    public String updateUserRole(int adminId, int userId, RoleCategory newRole) {
+        AbstractUser admin = userRepo.getUserById(adminId);
+        if (admin == null || admin.getRole() != RoleCategory.ADMIN) {
+            return "Access denied! Only ADMIN can change roles.";
         }
-
-        boolean success = userRepo.updateUserRole(userId, roleCategory); // Передаём Enum, а не строку
-        return success;
+        boolean updated = userRepo.updateUserRole(userId, newRole);
+        return updated ? "User role updated successfully!" : "Failed to update role.";
     }
 
     @Override
-    public List<User> getAllUsers() {
-        return userRepo.getAllUsers();
+    public String deleteUser(int userId) {
+        boolean isDeleted = userRepo.deleteUser(userId);
+        return isDeleted ? "User deleted successfully!" : "Failed to delete user.";
     }
 
-    public boolean deleteUser(int userId) {
-        return userRepo.deleteUser(userId);
+    @Override
+    public List<AbstractUser> getAllUsers() {
+        return userRepo.getAllUsers();
     }
 }

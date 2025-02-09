@@ -1,25 +1,26 @@
 package application.handlers;
 
+import controllers.Icontollers.IQuizController;
+import models.AbstractUser;
 import models.Quiz;
-import models.User;
-import controllers.QuizController;
 import enums.QuizCategory;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 public class QuizHandler {
 
-    private final QuizController quizController;
+    private final IQuizController quizController;
     private final Scanner scanner;
 
-    public QuizHandler(QuizController quizController, Scanner scanner) {
+    public QuizHandler(IQuizController quizController, Scanner scanner) {
         this.scanner = scanner;
         this.quizController = quizController;
     }
 
-    public void createQuiz(User currentUser) {
+    public void createQuiz(AbstractUser currentUser) {
         if (currentUser == null) {
             System.out.println("You must be logged in to create a quiz.");
             return;
@@ -36,7 +37,7 @@ public class QuizHandler {
 
         System.out.print("Enter category number: ");
         int categoryIndex = scanner.nextInt();
-        scanner.nextLine(); // очистка ввода
+        scanner.nextLine();
 
         if (categoryIndex < 1 || categoryIndex > categories.length) {
             System.out.println("Invalid category selection.");
@@ -50,7 +51,7 @@ public class QuizHandler {
     }
 
 
-    public void showQuizzes(User currentUser) { // Передаём currentUser
+    public void showQuizzes(AbstractUser currentUser) {
         if (currentUser == null) {
             System.out.println("You must be logged in to view quizzes.");
             return;
@@ -58,34 +59,29 @@ public class QuizHandler {
 
         List<Quiz> quizzes = quizController.showQuizzes(currentUser.getUserId());
 
-        if (quizzes.isEmpty()) {
-            System.out.println("No quizzes found.");
-            return;
-        }
-
-        System.out.println("Your Quizzes with Question Count:");
-        quizzes.forEach(quiz ->
-                System.out.println(quiz.getQuizName() + " - " + quiz.getCategory() + " - " + quiz.getQuestionCount() + " questions")
-        );
+        System.out.println(quizzes.isEmpty() ? "No quizzes found." : "Your Quizzes with Question Count:");
+        quizzes.forEach(quiz -> System.out.println(
+                quiz.getQuizName() + " - " + quiz.getCategory() + " - " + quiz.getQuestionCount() + " questions"
+        ));
     }
 
-    public void deleteQuiz(User currentUser) { // Передаём currentUser
+    public void deleteQuiz(AbstractUser currentUser) {
         if (currentUser == null) {
             System.out.println("You must be logged in to delete quizzes.");
             return;
         }
 
-        System.out.println("Select quiz to delete:");
-
         List<Quiz> quizzes = quizController.showQuizzes(currentUser.getUserId());
+
         if (quizzes.isEmpty()) {
             System.out.println("No quizzes available to delete.");
             return;
         }
 
-        for (int i = 0; i < quizzes.size(); i++) {
-            System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName());
-        }
+        System.out.println("Select quiz to delete:");
+        IntStream.range(0, quizzes.size()).forEach(i ->
+                System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName())
+        );
 
         try {
             System.out.print("Enter the number of the quiz to delete: ");
@@ -93,9 +89,7 @@ public class QuizHandler {
             scanner.nextLine();
 
             if (quizNumber > 0 && quizNumber <= quizzes.size()) {
-                int quizId = quizzes.get(quizNumber - 1).getQuizId();
-                String response = quizController.deleteQuiz(quizId);
-                System.out.println(response);
+                System.out.println(quizController.deleteQuiz(quizzes.get(quizNumber - 1).getQuizId()));
             } else {
                 System.out.println("Invalid quiz number. Please try again.");
             }
@@ -106,4 +100,15 @@ public class QuizHandler {
             System.out.println("An error occurred: " + e.getMessage());
         }
     }
+
+    public void displayQuizzes(List<Quiz> quizzes) {
+        if (quizzes.isEmpty()) {
+            System.out.println("No quizzes available.");
+            return;
+        }
+        System.out.println("Available Quizzes:");
+        IntStream.range(0, quizzes.size())
+                .forEach(i -> System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName()));
+    }
+
 }

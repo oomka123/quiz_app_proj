@@ -1,33 +1,32 @@
 package application.handlers;
 
-import controllers.QuestionController;
-import controllers.QuizController;
+import controllers.Icontollers.IQuestionController;
+import controllers.Icontollers.IQuizController;
 import models.Question;
 import models.Quiz;
-import models.User;
+import models.AbstractUser;
 
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 public class QuestionHandler {
-    private final QuestionController questionController;
-    private final QuizController quizController;
+    private final IQuestionController questionController;
+    private final IQuizController quizController;
     private final Scanner scanner;
 
-    public QuestionHandler(QuestionController questionController, QuizController quizController, Scanner scanner) {
+    public QuestionHandler(IQuestionController questionController, IQuizController quizController, Scanner scanner) {
         this.questionController = questionController;
         this.quizController = quizController;
         this.scanner = scanner;
     }
 
-    public void addQuestion(User currentUser) {
+    public void addQuestion(AbstractUser currentUser) {
         if (currentUser == null) {
             System.out.println("You must be logged in to add a question.");
             return;
         }
-
-        System.out.println("Select quiz to add a question:");
 
         List<Quiz> quizzes = quizController.showQuizzes(currentUser.getUserId());
         if (quizzes.isEmpty()) {
@@ -35,9 +34,9 @@ public class QuestionHandler {
             return;
         }
 
-        for (int i = 0; i < quizzes.size(); i++) {
-            System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName());
-        }
+        System.out.println("Select quiz to add a question:");
+        IntStream.range(0, quizzes.size())
+                .forEach(i -> System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName()));
 
         try {
             System.out.print("Enter the number of the quiz: ");
@@ -50,9 +49,7 @@ public class QuestionHandler {
                 System.out.print("Enter question text: ");
                 String questionText = scanner.nextLine();
 
-                //Question question = new Question(questionText, quizId);
-                String response = questionController.addQuestion(questionText, quizId);
-                System.out.println(response);
+                System.out.println(questionController.addQuestion(questionText, quizId));
             } else {
                 System.out.println("Invalid quiz number.");
             }
@@ -62,23 +59,22 @@ public class QuestionHandler {
         }
     }
 
-    public void showQuestions(User currentUser) {
+
+    public void showQuestions(AbstractUser currentUser) {
         if (currentUser == null) {
             System.out.println("You must be logged in to view questions.");
             return;
         }
 
-        System.out.println("Select quiz to view questions:");
-
         List<Quiz> quizzes = quizController.showQuizzes(currentUser.getUserId());
         if (quizzes.isEmpty()) {
             System.out.println("No quizzes available.");
             return;
         }
 
-        for (int i = 0; i < quizzes.size(); i++) {
-            System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName());
-        }
+        System.out.println("Select quiz to view questions:");
+        IntStream.range(0, quizzes.size())
+                .forEach(i -> System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName()));
 
         try {
             System.out.print("Enter the number of the quiz: ");
@@ -86,15 +82,12 @@ public class QuestionHandler {
             scanner.nextLine();
 
             if (quizNumber > 0 && quizNumber <= quizzes.size()) {
-                int quizId = quizzes.get(quizNumber - 1).getQuizId();
+                List<Question> questions = questionController.getQuestionsByQuiz(quizzes.get(quizNumber - 1).getQuizId());
 
-                List<Question> questions = questionController.getQuestionsByQuiz(quizId);
-                if (questions.isEmpty()) {
-                    System.out.println("No questions found for this quiz.");
-                } else {
-                    System.out.println("Questions:");
-                    questions.forEach(q -> System.out.println("- " + q.getQuestionText()));
-                }
+                System.out.println(questions.isEmpty()
+                        ? "No questions found for this quiz."
+                        : "Questions:");
+                questions.forEach(q -> System.out.println("- " + q.getQuestionText()));
             } else {
                 System.out.println("Invalid quiz number.");
             }
@@ -104,23 +97,22 @@ public class QuestionHandler {
         }
     }
 
-    public void deleteQuestion(User currentUser) {
+
+    public void deleteQuestion(AbstractUser currentUser) {
         if (currentUser == null) {
             System.out.println("You must be logged in to delete a question.");
             return;
         }
 
-        System.out.println("Select quiz to delete a question:");
-
         List<Quiz> quizzes = quizController.showQuizzes(currentUser.getUserId());
         if (quizzes.isEmpty()) {
             System.out.println("No quizzes available.");
             return;
         }
 
-        for (int i = 0; i < quizzes.size(); i++) {
-            System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName());
-        }
+        System.out.println("Select quiz to delete a question:");
+        IntStream.range(0, quizzes.size())
+                .forEach(i -> System.out.println((i + 1) + ". " + quizzes.get(i).getQuizName()));
 
         try {
             System.out.print("Enter the number of the quiz: ");
@@ -128,29 +120,24 @@ public class QuestionHandler {
             scanner.nextLine();
 
             if (quizNumber > 0 && quizNumber <= quizzes.size()) {
-                int quizId = quizzes.get(quizNumber - 1).getQuizId();
+                List<Question> questions = questionController.getQuestionsByQuiz(quizzes.get(quizNumber - 1).getQuizId());
 
-                List<Question> questions = questionController.getQuestionsByQuiz(quizId);
                 if (questions.isEmpty()) {
                     System.out.println("No questions found for this quiz.");
                     return;
                 }
 
-                for (int i = 0; i < questions.size(); i++) {
-                    System.out.println((i + 1) + ". " + questions.get(i).getQuestionText());
-                }
+                System.out.println("Select question to delete:");
+                IntStream.range(0, questions.size())
+                        .forEach(i -> System.out.println((i + 1) + ". " + questions.get(i).getQuestionText()));
 
                 System.out.print("Enter the number of the question to delete: ");
                 int questionNumber = scanner.nextInt();
                 scanner.nextLine();
 
-                if (questionNumber > 0 && questionNumber <= questions.size()) {
-                    int questionId = questions.get(questionNumber - 1).getQuestionId();
-                    String response = questionController.deleteQuestion(questionId);
-                    System.out.println(response);
-                } else {
-                    System.out.println("Invalid question number.");
-                }
+                System.out.println((questionNumber > 0 && questionNumber <= questions.size())
+                        ? questionController.deleteQuestion(questions.get(questionNumber - 1).getQuestionId())
+                        : "Invalid question number.");
             } else {
                 System.out.println("Invalid quiz number.");
             }
@@ -159,4 +146,15 @@ public class QuestionHandler {
             scanner.next();
         }
     }
+
+    public void displayQuestions(List<Question> questions) {
+        if (questions.isEmpty()) {
+            System.out.println("No questions available.");
+            return;
+        }
+        System.out.println("Questions:");
+        IntStream.range(0, questions.size())
+                .forEach(i -> System.out.println((i + 1) + ". " + questions.get(i).getQuestionText()));
+    }
+
 }

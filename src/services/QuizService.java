@@ -1,18 +1,16 @@
 package services;
 
 import models.Quiz;
-import repositories.QuizRepository;
+import repositories.Irepositories.IQuizRepository;
 import factories.QuizFactory;
 import services.Iservices.IQuizService;
-
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class QuizService implements IQuizService {
-    private final QuizRepository quizRepo;
+    private final IQuizRepository quizRepo;
 
-    public QuizService(QuizRepository quizRepo) {
+    public QuizService(IQuizRepository quizRepo) {
         this.quizRepo = quizRepo;
     }
 

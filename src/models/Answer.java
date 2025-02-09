@@ -25,34 +25,20 @@ public class Answer implements IAnswer {
         this.answerId = answerId;
     }
 
-    @Override
     public int getQuestionId() {
         return this.questionId;
     }
 
-    @Override
     public void setQuestionId(int questionId) {
         this.questionId = questionId;
     }
 
-    @Override
     public String getAnswerText() {
         return this.answerText;
     }
 
-    @Override
-    public void setAnswerText(String answerText) {
-        this.answerText = answerText;
-    }
-
-    @Override
     public boolean isCorrectAnswer() {
         return this.correctAnswer;
-    }
-
-    @Override
-    public void setCorrectAnswer(boolean correctAnswer) {
-        this.correctAnswer = correctAnswer;
     }
 
     @Override

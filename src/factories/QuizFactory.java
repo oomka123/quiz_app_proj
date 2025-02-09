@@ -12,7 +12,11 @@ public class QuizFactory {
             throw new IllegalArgumentException("Category cannot be empty.");
         }
 
-        return new Quiz(quizName, userId, category);
+        return new Quiz.QuizBuilder()
+                .setQuizName(quizName)
+                .setUserId(userId)
+                .setCategory(category)
+                .build();
     }
 }
 
